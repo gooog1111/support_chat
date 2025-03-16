@@ -106,7 +106,7 @@ systemctl reload apache2
 
 👥 Разработка
 
-Автор: [![gooog1111]]
+Автор: [gooog1111](https://github.com/gooog1111/)
 
 Поддержка: example@email.com
 

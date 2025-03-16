@@ -108,10 +108,7 @@ systemctl reload apache2
 
 Автор: [gooog1111](https://github.com/gooog1111/)
 
-Поддержка: example@email.com
-
 Лицензия: MIT License
-
 
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)

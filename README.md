@@ -103,9 +103,9 @@ systemctl reload apache2
 Лицензия: MIT License
 
 
-```
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+```
 ---
 
 > ⚠️ **Важно!** Перед использованием в продакшене проведите аудит безопасности и настройте HTTPS.

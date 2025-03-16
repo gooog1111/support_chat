@@ -1,0 +1,128 @@
+/* Основные стили для страницы */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Занимаем всю высоту экрана */
+}
+
+/* Обертка для чата */
+.chat-wrapper {
+    width: 100%;
+    max-width: 600px; /* Фиксированная ширина чата */
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 80vh; /* Фиксированная высота чата */
+}
+
+/* Контейнер чата */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 20px;
+    height: 100%; /* Занимаем всю высоту .chat-wrapper */
+    box-sizing: border-box; /* Учитываем padding в общей высоте */
+}
+
+/* Заголовок чата */
+.chat-container h2 {
+    margin: 0 0 20px 0;
+    font-size: 24px;
+    color: #333;
+}
+
+/* Контейнер для сообщений */
+.messages-container {
+    flex-grow: 1; /* Занимает всё доступное пространство */
+    overflow-y: auto; /* Прокрутка только внутри этого блока */
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    min-height: 0; /* Важно: позволяет flex-элементу сжиматься */
+    box-sizing: border-box; /* Учитываем padding в общей высоте */
+}
+
+/* Стили для сообщений */
+.messages-container .admin,
+.messages-container .client {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 70%;
+    box-sizing: border-box; /* Учитываем padding в общей ширине */
+}
+
+.messages-container .admin {
+    background-color: #e3f2fd;
+    margin-left: auto; /* Сообщения администратора справа */
+}
+
+.messages-container .client {
+    background-color: #f1f1f1;
+    margin-right: auto; /* Сообщения клиента слева */
+}
+
+/* Время сообщения */
+.time {
+    display: block;
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Форма ввода сообщения */
+#messageForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    background-color: #fff;
+    border-top: 1px solid #ddd;
+    flex-shrink: 0; /* Форма не сжимается */
+    box-sizing: border-box; /* Учитываем padding в общей ширине */
+}
+
+#messageForm textarea {
+    resize: none;
+    width: 100%;
+    height: 80px;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    box-sizing: border-box; /* Учитываем padding в общей ширине */
+}
+
+#messageForm input[type="file"] {
+    border: none;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-sizing: border-box; /* Учитываем padding в общей ширине */
+}
+
+#messageForm button {
+    background-color: #3498db;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%; /* Кнопка занимает всю ширину формы */
+    box-sizing: border-box; /* Учитываем padding в общей ширине */
+}
+
+#messageForm button:hover {
+    background-color: #2980b9;
+}

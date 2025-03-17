@@ -213,7 +213,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert('Ошибка при отправке сообщения. Проверьте консоль для подробностей.');
             });
     });
-
+    const messageInput = chatForm.querySelector('textarea[name="message"]');
+    if (messageInput) {
+        messageInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Предотвращаем перенос строки
+                chatForm.dispatchEvent(new Event('submit')); // Имитируем отправку формы
+            }
+        });
+    }
     // Получаем модальное окно и изображение внутри него
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('modalImage');

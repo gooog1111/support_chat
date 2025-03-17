@@ -29,7 +29,7 @@ body {
     flex-direction: column;
     flex-grow: 1;
     padding: 20px;
-    height: 100%; /* Занимаем всю высоту .chat-wrapper */
+    height: 96%; /* Занимаем всю высоту .chat-wrapper */
     box-sizing: border-box; /* Учитываем padding в общей высоте */
 }
 

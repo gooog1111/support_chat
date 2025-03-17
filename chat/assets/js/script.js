@@ -85,7 +85,15 @@ document.addEventListener('DOMContentLoaded', function () {
             submitButton.disabled = false; // Включаем кнопку отправки
         }
     });
-
+const messageInput = messageForm.querySelector('textarea[name="message"]');
+    if (messageInput) {
+        messageInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Предотвращаем перенос строки
+                messageForm.dispatchEvent(new Event('submit')); // Имитируем отправку формы
+            }
+        });
+    }
     // Функция для обновления чата
     function updateChat() {
         fetch('get_messages.php')

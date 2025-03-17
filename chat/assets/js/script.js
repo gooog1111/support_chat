@@ -140,3 +140,37 @@ function updateOnlineAdmins() {
         }
         setInterval(updateOnlineAdmins, 10000);
         updateOnlineAdmins();
+// Добавить в конец файла
+document.addEventListener('DOMContentLoaded', function() {
+    // Функционал модального окна
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById("modalImage");
+    const span = document.getElementsByClassName("close")[0];
+
+    // Открытие изображения
+    document.getElementById('messages').addEventListener('click', function(e) {
+        if (e.target.tagName === 'IMG') {
+            modal.style.display = "block";
+            modalImg.src = e.target.src;
+        }
+    });
+
+    // Закрытие модального окна
+    span.onclick = function() { 
+        modal.style.display = "none";
+    }
+    
+    // Закрытие при клике вне изображения
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+    
+    // Закрытие по ESC
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape" && modal.style.display === "block") {
+            modal.style.display = "none";
+        }
+    });
+});

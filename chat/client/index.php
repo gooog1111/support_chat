@@ -72,6 +72,10 @@ $chatId = md5($clientToken . getClientIP()); // Генерация chatId на �
            Администраторов онлайн: <span id="onlineAdmins">0</span>
         </div>
         <div class="chat-container">
+		    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
             <h2>Техподдержка</h2>
             <div id="messages" class="messages-container">
                 <?php

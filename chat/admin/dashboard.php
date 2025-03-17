@@ -9,7 +9,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
     header("Location: login.php");
     exit();
 }
-
+updateAdminOnlineStatus($_SESSION['admin_username']);
 // Загрузка всех чатов для списка
 $chats = [];
 foreach (glob(CLIENTS_DIR . "*.json") as $clientFile) {

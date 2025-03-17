@@ -130,3 +130,13 @@ document.addEventListener('DOMContentLoaded', function () {
     updateChat();
     scrollToBottom();
 });
+function updateOnlineAdmins() {
+            fetch('get_online_admins.php')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('onlineAdmins').textContent = data.online;
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+        setInterval(updateOnlineAdmins, 10000);
+        updateOnlineAdmins();

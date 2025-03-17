@@ -8,6 +8,7 @@ if (strpos($_SERVER['HTTP_USER_AGENT'], 'curl') !== false ||
 // Абсолютный путь к корню проекта
 define('DISABLE_DNS_LOOKUP', true); // Отключаем DNS-запросы для существующих клиентов
 define('ROOT_DIR', realpath(__DIR__ . '/..') . '/');
+define('ADMINS_ONLINE_DIR', ROOT_DIR . 'admin_online/');
 ini_set('log_errors', 1);
 ini_set('error_log', ROOT_DIR . 'logs/error.log');
 
@@ -40,5 +41,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 // Генерация CSRF токена
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+if (!file_exists(ADMINS_ONLINE_DIR)) {
+    mkdir(ADMINS_ONLINE_DIR, 0755, true);
 }
 ?>

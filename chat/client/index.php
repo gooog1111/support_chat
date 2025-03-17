@@ -68,8 +68,11 @@ $chatId = md5($clientToken . getClientIP()); // Генерация chatId на �
 </head>
 <body>
     <div class="chat-wrapper">
+	<div class="online-status">
+           Администраторов онлайн: <span id="onlineAdmins">0</span>
+        </div>
         <div class="chat-container">
-            <h2>Поддержка</h2>
+            <h2>Техподдержка</h2>
             <div id="messages" class="messages-container">
                 <?php
                 $messages = getMessages($chatId);

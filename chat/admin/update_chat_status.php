@@ -10,7 +10,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
     echo json_encode(['success' => false, 'error' => 'Доступ запрещен.']);
     exit();
 }
-
+updateAdminOnlineStatus($_SESSION['admin_username']);
 $chatId = sanitizeInput($_GET['id'] ?? '');
 $status = sanitizeInput($_GET['status'] ?? '');
 $adminName = sanitizeInput($_GET['admin'] ?? '');

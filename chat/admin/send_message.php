@@ -12,7 +12,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
     echo json_encode(['success' => false, 'error' => 'Доступ запрещен.']);
     exit();
 }
-
+updateAdminOnlineStatus($_SESSION['admin_username']);
 // Проверка ID чата
 $chatId = sanitizeInput($_POST['chatId'] ?? '');
 if (!$chatId || !file_exists(CHATS_DIR . "$chatId.json")) {

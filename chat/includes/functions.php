@@ -26,4 +26,21 @@ function generateCsrfToken() {
 function validateCsrfToken($token) {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
+function updateAdminOnlineStatus($username) {
+    $file = ADMINS_ONLINE_DIR . md5($username) . '.txt';
+    file_put_contents($file, time());
+}
+
+function getOnlineAdminsCount() {
+    $online = 0;
+    $files = glob(ADMINS_ONLINE_DIR . '*.txt');
+    $currentTime = time();
+    foreach ($files as $file) {
+        $lastActive = (int)file_get_contents($file);
+        if ($currentTime - $lastActive <= 300) { // 5 минут активности
+            $online++;
+        }
+    }
+    return $online;
+}
 ?>

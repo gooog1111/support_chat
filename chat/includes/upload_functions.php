@@ -18,13 +18,37 @@ function handleFileUpload($file) {
         return "Недопустимый тип файла. Разрешены только JPG, PNG и GIF.";
     }
 
-    // Генерация уникального имени файла
+       // Генерация уникального имени файла
     $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
     $fileName = uniqid() . ".$ext";
     $dest = UPLOAD_DIR . $fileName;
 
     if (move_uploaded_file($file['tmp_name'], $dest)) {
-        return '/chat/uploads/' . $fileName; // Возвращаем путь к файлу
+        // Установка прав в зависимости от ОС
+        $os = PHP_OS_FAMILY;
+        
+        if ($os === 'Windows') {
+            // Для Windows: полный доступ через icacls
+            $command = 'icacls "' . $dest . '" /grant IIS_IUSRS:(F)';
+            exec($command, $output, $returnCode);
+            
+            if ($returnCode !== 0) {
+                error_log("Windows: Ошибка установки прав: " . implode("\n", $output));
+            }
+        } elseif ($os === 'Linux') {
+            // Для Linux: устанавливаем права 0644 (rw-r--r--)
+            if (!chmod($dest, 0644)) {
+                error_log("Linux: Ошибка установки прав для файла: " . $dest);
+            }
+            
+            // Дополнительно: меняем владельца (требует прав sudo)
+            // $webUser = 'www-data'; // Пользователь веб-сервера
+            // if (!chown($dest, $webUser)) {
+            //     error_log("Linux: Ошибка смены владельца для файла: " . $dest);
+            // }
+        }
+
+        return '/chat/uploads/' . $fileName;
     } else {
         return "Ошибка при загрузке файла.";
     }

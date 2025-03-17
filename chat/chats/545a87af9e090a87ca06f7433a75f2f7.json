@@ -1,0 +1,30 @@
+[
+    {
+        "time": "2025-03-17 04:41:48",
+        "isAdmin": false,
+        "message": "12345",
+        "image": null,
+        "adminName": null
+    },
+    {
+        "time": "2025-03-17 04:42:44",
+        "isAdmin": true,
+        "message": "12345",
+        "image": null,
+        "adminName": "Иван adas"
+    },
+    {
+        "time": "2025-03-17 16:51:19",
+        "isAdmin": false,
+        "message": "",
+        "image": "\/chat\/uploads\/67d844f7252a9.png",
+        "adminName": null
+    },
+    {
+        "time": "2025-03-17 16:51:27",
+        "isAdmin": false,
+        "message": "",
+        "image": "\/chat\/uploads\/67d844ff871c9.png",
+        "adminName": null
+    }
+]

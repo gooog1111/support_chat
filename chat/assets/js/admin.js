@@ -27,19 +27,77 @@ function loadChatMessages(chatId) {
         .then(response => response.json())
         .then(messages => {
             if (chatMessages) {
-                chatMessages.innerHTML = messages.map(msg => `
-                    <div class="${msg.isAdmin ? 'admin' : 'client'}">
-                        <strong>${msg.isAdmin ? 'Администратор' : 'Клиент'}:</strong>
-                        ${msg.message}
-                        ${msg.image ? `<br><img src="${msg.image}" alt="Изображение" style="max-width:200px; cursor: pointer;">` : ''}
-                        <span class="time">${msg.time}</span>
-                    </div>
-                `).join('');
+                // Сохраняем текущую позицию прокрутки
+                const isNearBottom = chatMessages.scrollHeight - chatMessages.scrollTop <= chatMessages.clientHeight + 100;
 
-                // Прокрутка вниз после обновления сообщений
-                setTimeout(scrollToBottom, 100); // Задержка для корректной прокрутки
+                let groupedMessages = [];
+                let lastSender = null;
+                let lastTime = null;
+
+                messages.forEach(msg => {
+                    const currentTime = new Date(msg.time).getTime();
+                    const isSameSender = lastSender === (msg.isAdmin ? 'admin' : 'client');
+                    const isWithinTimeFrame = lastTime && (currentTime - lastTime) < 120000; // 2 минуты
+
+                    if (isSameSender && isWithinTimeFrame) {
+                        groupedMessages[groupedMessages.length - 1].messages.push(msg);
+                    } else {
+                        groupedMessages.push({
+                            sender: msg.isAdmin ? 'admin' : 'client',
+                            senderName: msg.isAdmin ? msg.adminName : 'Пользователь:',
+                            messages: [msg]
+                        });
+                    }
+
+                    lastSender = msg.isAdmin ? 'admin' : 'client';
+                    lastTime = currentTime;
+                });
+
+                // Очищаем контейнер сообщений
+                chatMessages.innerHTML = '';
+
+                // Отображаем сгруппированные сообщения
+                groupedMessages.forEach(group => {
+                    const groupContainer = document.createElement('div');
+                    groupContainer.classList.add('message-group', group.sender);
+
+                    // Добавляем имя отправителя в начале блока
+                    const senderNameElement = document.createElement('div');
+                    senderNameElement.classList.add('sender-name');
+                    senderNameElement.textContent = group.senderName;
+                    groupContainer.appendChild(senderNameElement);
+
+                    // Добавляем сообщения
+                    group.messages.forEach((msg, index) => {
+                        const messageElement = document.createElement('div');
+                        messageElement.classList.add('message');
+                        messageElement.innerHTML = `
+                            <div class="message-content">${msg.message}</div>
+                            ${msg.image ? `<br><img src="${msg.image}" alt="Изображение" style="max-width:200px; cursor: pointer;">` : ''}
+                        `;
+
+                        // Добавляем время только под последним сообщением в блоке
+                        if (index === group.messages.length - 1) {
+                            const timeElement = document.createElement('span');
+                            timeElement.classList.add('time');
+                            timeElement.textContent = msg.time;
+                            messageElement.appendChild(timeElement);
+                        }
+
+                        groupContainer.appendChild(messageElement);
+                    });
+
+                    chatMessages.appendChild(groupContainer);
+                });
+
+                // Прокрутка вниз только если пользователь уже находится внизу
+                if (isNearBottom) {
+                    setTimeout(() => {
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }, 100);
+                }
             }
-			updateChatList();
+            updateChatList();
         })
         .catch(error => {
             console.error('Ошибка при загрузке сообщений:', error);

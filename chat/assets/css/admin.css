@@ -602,3 +602,52 @@ body, html {
     opacity: 0.8;
     cursor: progress;
 }
+/* Стили для группировки сообщений */
+.message-group {
+    margin-bottom: 15px;
+    max-width: 70%;
+}
+
+.message-group.admin {
+    margin-right: auto;
+}
+
+.message-group.client {
+    margin-right: auto;
+}
+
+/* Имя отправителя */
+.sender-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+/* Сообщения внутри группы */
+.message-group .message {
+    margin-bottom: 5px;
+}
+
+.message-group .message:last-child {
+    margin-bottom: 0;
+}
+
+/* Контент сообщения */
+.message-group .message-content {
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.message-group.admin .message-content {
+    background-color: #e3f2fd;
+}
+
+/* Время под последним сообщением */
+.message-group .time {
+    display: block;
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 5px;
+}

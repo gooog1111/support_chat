@@ -5,11 +5,15 @@ document.addEventListener('DOMContentLoaded', function () {
     let isSending = false; // Флаг для отслеживания состояния отправки
 
     // Функция для прокрутки вниз
-    function scrollToBottom() {
-        setTimeout(() => {
-            chatDiv.scrollTop = chatDiv.scrollHeight;
-        }, 0); // Задержка 0ms, чтобы выполнить после отрисовки
+function scrollToBottom() {
+    const chatDiv = document.getElementById('messages');
+    if (chatDiv) {
+        chatDiv.scrollTo({
+            top: chatDiv.scrollHeight,
+            behavior: 'smooth' // Плавная прокрутка
+        });
     }
+}
 
     // Функция для восстановления сессии
     function restoreSession() {
@@ -95,41 +99,88 @@ const messageInput = messageForm.querySelector('textarea[name="message"]');
         });
     }
     // Функция для обновления чата
-    function updateChat() {
-        fetch('get_messages.php')
-            .then(response => {
-                if (!response.ok) {
-                    // Если сессия не активна, пытаемся восстановить её
-                    restoreSession();
-                    throw new Error('Сессия не активна. Восстановление...');
-                }
-                return response.json();
-            })
-            .then(messages => {
-                // Очищаем чат перед добавлением новых сообщений
-                chatDiv.innerHTML = '';
+function updateChat() {
+    fetch('get_messages.php')
+        .then(response => {
+            if (!response.ok) {
+                restoreSession();
+                throw new Error('Сессия не активна. Восстановление...');
+            }
+            return response.json();
+        })
+        .then(messages => {
+            // Сохраняем текущую позицию прокрутки
+            const isNearBottom = chatDiv.scrollHeight - chatDiv.scrollTop <= chatDiv.clientHeight + 100;
 
-                // Добавляем сообщения в чат
-                messages.forEach(msg => {
+            let groupedMessages = [];
+            let lastSender = null;
+            let lastTime = null;
+
+            messages.forEach(msg => {
+                const currentTime = new Date(msg.time).getTime();
+                const isSameSender = lastSender === (msg.isAdmin ? 'admin' : 'client');
+                const isWithinTimeFrame = lastTime && (currentTime - lastTime) < 120000; // 2 минуты
+
+                if (isSameSender && isWithinTimeFrame) {
+                    groupedMessages[groupedMessages.length - 1].messages.push(msg);
+                } else {
+                    groupedMessages.push({
+                        sender: msg.isAdmin ? 'admin' : 'client',
+                        senderName: msg.isAdmin ? msg.adminName : 'Вы',
+                        messages: [msg]
+                    });
+                }
+
+                lastSender = msg.isAdmin ? 'admin' : 'client';
+                lastTime = currentTime;
+            });
+
+            // Очищаем чат перед добавлением новых сообщений
+            chatDiv.innerHTML = '';
+
+            // Добавляем сгруппированные сообщения в чат
+            groupedMessages.forEach(group => {
+                const groupContainer = document.createElement('div');
+                groupContainer.classList.add('message-group', group.sender);
+
+                // Добавляем имя отправителя в начале блока
+                const senderNameElement = document.createElement('div');
+                senderNameElement.classList.add('sender-name');
+                senderNameElement.textContent = group.senderName;
+                groupContainer.appendChild(senderNameElement);
+
+                // Добавляем сообщения
+                group.messages.forEach((msg, index) => {
                     const messageElement = document.createElement('div');
-                    messageElement.classList.add(msg.isAdmin ? 'admin' : 'client');
+                    messageElement.classList.add('message');
                     messageElement.innerHTML = `
-                        <strong>${msg.isAdmin ? msg.adminName : 'Вы'}:</strong> 
-                        ${msg.message}
+                        <div class="message-content">${msg.message}</div>
                         ${msg.image ? `<br><img src="${msg.image}" alt="Изображение" style="max-width:200px;">` : ''}
-                        <span class="time">${msg.time}</span>
                     `;
-                    chatDiv.appendChild(messageElement);
+
+                    // Добавляем время только под последним сообщением в блоке
+                    if (index === group.messages.length - 1) {
+                        const timeElement = document.createElement('span');
+                        timeElement.classList.add('time');
+                        timeElement.textContent = msg.time;
+                        messageElement.appendChild(timeElement);
+                    }
+
+                    groupContainer.appendChild(messageElement);
                 });
 
-                // Автоматическая прокрутка вниз после добавления всех сообщений
-                scrollToBottom();
-            })
-            .catch(error => {
-                console.error('Ошибка при обновлении чата:', error);
-                // Не показываем уведомление пользователю, просто логируем ошибку
+                chatDiv.appendChild(groupContainer);
             });
-    }
+
+            // Прокрутка вниз только если пользователь уже находится внизу
+            if (isNearBottom) {
+                setTimeout(scrollToBottom, 100); // Плавная прокрутка
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка при обновлении чата:', error);
+        });
+}
 
     // Обновляем чат каждые 10 секунд (увеличенный интервал для снижения нагрузки)
     setInterval(updateChat, 10000);

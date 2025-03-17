@@ -66,15 +66,23 @@ usort($chats, fn($a, $b) => strtotime($b['last_activity']) <=> strtotime($a['las
             <h2>Список чатов</h2>
             <div class="chat-list">
                 <?php foreach ($chats as $chat): ?>
-                    <div class="chat-item <?= htmlspecialchars($chat['status']) ?>" data-chat-id="<?= htmlspecialchars($chat['id']) ?>">
-                        <p><strong>Клиент:</strong> <?= htmlspecialchars($chat['info']['name'] ?? 'Неизвестный') ?></p>
-                        <p><strong>IP:</strong> <?= htmlspecialchars($chat['info']['ip'] ?? 'Неизвестный') ?></p>
-						<p><strong>Имя ПК:</strong> <?= htmlspecialchars($chat['info']['hostname'] ?? 'Не определено') ?></p>
-                        <p><strong>Статус:</strong> <?= htmlspecialchars($chat['status']) ?></p>
-                        <p><strong>Последняя активность:</strong> <?= htmlspecialchars($chat['last_activity']) ?></p>
-                        <p><strong>Непрочитанные сообщения:</strong> <?= $chat['unread'] ?></p>
-                    </div>
-                <?php endforeach; ?>
+    <div class="chat-item <?= htmlspecialchars($chat['status']) ?>" data-chat-id="<?= htmlspecialchars($chat['id']) ?>">
+        <?php
+        $fields = [
+            'Клиент' => $chat['info']['name'] ?? 'Неизвестный',
+            'Kerberos' => $chat['info']['kerberos'] ?? 'Неизвестно',
+            'IP' => $chat['info']['ip'] ?? 'Неизвестный',
+            'Имя ПК' => $chat['info']['hostname'] ?? 'Не определено',
+            'Статус' => $chat['status'],
+            'Последняя активность' => $chat['last_activity'],
+            'Непрочитанные сообщения' => $chat['unread']
+        ];
+
+        foreach ($fields as $label => $value): ?>
+            <p><strong><?= htmlspecialchars($label) ?>:</strong> <?= htmlspecialchars($value) ?></p>
+        <?php endforeach; ?>
+    </div>
+<?php endforeach; ?>
             </div>
         </div>
 

@@ -46,6 +46,9 @@ if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR
     }
 }
 
+// Получение имени Kerberos из заголовков или переменных окружения
+$kerberosName = $_SERVER['REMOTE_USER'] ?? $_SERVER['KRB5CCNAME'] ?? 'Неизвестно';
+
 // Работа с информацией о клиенте
 $clientInfoPath = CLIENTS_DIR . "$chatId.json";
 $clientInfo = [];
@@ -57,7 +60,7 @@ if (file_exists($clientInfoPath)) {
         echo json_encode($response);
         exit();
     }
-    
+
     // Автоматическое открытие закрытого чата
     if (strpos($clientInfo['status'], 'Закрыт') !== false) {
         $clientInfo['status'] = 'Открыт';
@@ -65,7 +68,7 @@ if (file_exists($clientInfoPath)) {
 } else {
     // Создание новой записи клиента
     $hostname = 'Неизвестный хост'; // Значение по умолчанию
-    
+
     if (!DISABLE_DNS_LOOKUP) {
         $hostname = @gethostbyaddr(getClientIP()) ?: 'Неизвестный хост';
     }
@@ -74,6 +77,7 @@ if (file_exists($clientInfoPath)) {
         'name' => $clientName,
         'ip' => getClientIP(),
         'hostname' => $hostname,
+        'kerberos' => $kerberosName, // Добавляем имя Kerberos
         'created_at' => date('Y-m-d H:i:s'),
         'status' => 'Открыт',
         'last_activity' => date('Y-m-d H:i:s'),

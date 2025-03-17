@@ -26,11 +26,13 @@
   - Apache с модулями: 
     - `mod_rewrite` 
     - `mod_headers`
+    - `fileinfo`
 - **Права доступа**:
   ```bash
   chmod -R 755 chat/
   chown -R www-data:www-data chat/
   ```
+  в Windows IIS дать полные права на папки пользователю `IIS_ISUSR`
 ⚙️ Установка
 Скопируйте папку chat в корень веб-сервера:
 

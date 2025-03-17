@@ -1,6 +1,10 @@
 # 💬 Чат технической поддержки (локальная сеть)
 
-## Внимание этот Readme.md сгенерирован ИИ
+## ⚠️ *Внимание*
+
+этот Readme.md сгенерирован ИИ, произведена только косметическая редактура.
+
+---
 
 Простой и (не очень) безопасный чат для организации технической поддержки с разделением на клиентский и административный интерфейсы. Работает на Apache, Nginx или IIS без использования БД и Node.js.
 
@@ -79,6 +83,7 @@
 3. **Настройка виртуального хоста**:
    - Откройте файл `httpd-vhosts.conf` (обычно в `C:\xampp\apache\conf\extra`).
    - Добавьте:
+     ```
      <VirtualHost *:80>
          DocumentRoot "C:/xampp/htdocs/chat"
          ServerName chat.local
@@ -88,6 +93,7 @@
              Require all granted
          </Directory>
      </VirtualHost>
+     ```
    - Перезапустите Apache через панель управления XAMPP или WAMP.
 
 4. **Проверка работы PHP**:
@@ -103,17 +109,20 @@
 
 1. **Установка Apache и PHP**:
    - Обновите пакеты и установите Apache и PHP:
+     ```bash
      sudo apt update
      sudo apt install apache2 php libapache2-mod-php php-common php-fileinfo
-
+    ```
 2. **Копирование проекта**:
    - Скопируйте папку `chat` в `/var/www/html/`:
+      ```bash
      sudo cp -r chat/ /var/www/html/
-
+      ```
 3. **Настройка виртуального хоста**:
    - Создайте файл конфигурации:
      sudo nano /etc/apache2/sites-available/chat.conf
    - Добавьте:
+     ```
      <VirtualHost *:80>
          DocumentRoot /var/www/html/chat
          ServerName chat.local
@@ -123,6 +132,7 @@
              Require all granted
          </Directory>
      </VirtualHost>
+     ```
    - Включите сайт и перезапустите Apache:
      sudo a2ensite chat.conf
      sudo systemctl reload apache2
@@ -152,6 +162,7 @@
    - Создайте файл конфигурации:
      sudo nano /etc/nginx/sites-available/chat
    - Добавьте:
+     ```
      server {
          listen 80;
          server_name chat.local;
@@ -168,6 +179,7 @@
              fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
          }
      }
+     ```
    - Включите сайт и перезапустите Nginx:
      sudo ln -s /etc/nginx/sites-available/chat /etc/nginx/sites-enabled/
      sudo systemctl restart nginx

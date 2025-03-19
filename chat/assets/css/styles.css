@@ -1,26 +1,29 @@
 /* Основные стили для страницы */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #2c3e50 0%, #4a6072 100%); /* Серый градиент */
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh; /* Занимаем всю высоту экрана */
+    height: 100vh;
+    color: #fff;
 }
 
 /* Обертка для чата */
 .chat-wrapper {
     width: 100%;
-    max-width: 600px; /* Фиксированная ширина чата */
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* Увеличенная тень для объема */
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: 80vh; /* Фиксированная высота чата */
+    height: 90vh;
 }
 
 /* Контейнер чата */
@@ -29,161 +32,207 @@ body {
     flex-direction: column;
     flex-grow: 1;
     padding: 20px;
-    height: 96%; /* Занимаем всю высоту .chat-wrapper */
-    box-sizing: border-box; /* Учитываем padding в общей высоте */
+    height: 96%;
+    box-sizing: border-box;
 }
 
 /* Заголовок чата */
 .chat-container h2 {
     margin: 0 0 20px 0;
     font-size: 24px;
-    color: #333;
+    color: #fff;
+    text-align: center;
+    font-weight: 600;
 }
 
 /* Контейнер для сообщений */
 .messages-container {
-    flex-grow: 1; /* Занимает всё доступное пространство */
-    overflow-y: auto; /* Прокрутка только внутри этого блока */
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
     margin-bottom: 20px;
-    min-height: 0; /* Важно: позволяет flex-элементу сжиматься */
-    box-sizing: border-box; /* Учитываем padding в общей высоте */
+    min-height: 0;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Добавлен объем */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* Внутренняя тень для объема */
+}
+
+.messages-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 /* Стили для сообщений */
 .messages-container .admin,
 .messages-container .client {
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 8px;
+    margin-bottom: 15px;
+    padding: 12px;
+    border-radius: 12px;
     max-width: 70%;
-    box-sizing: border-box; /* Учитываем padding в общей ширине */
+    box-sizing: border-box;
+    position: relative;
 }
 
 .messages-container .admin {
-    background-color: #e3f2fd;
-    margin-left: auto; /* Сообщения администратора справа */
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    margin-left: auto;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Тень для объема */
 }
 
 .messages-container .client {
-    background-color: #f1f1f1;
-    margin-right: auto; /* Сообщения клиента слева */
+    background: linear-gradient(135deg, #4a5568, #2d3748);
+    margin-right: auto;
+    color: #fff;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Тень для объема */
 }
 
 /* Время сообщения */
 .time {
     display: block;
-    font-size: 0.8em;
-    color: #666;
+    font-size: 0.75em;
+    color: rgba(255, 255, 255, 0.7);
     margin-top: 5px;
+    text-align: right;
 }
 
 /* Форма ввода сообщения */
 #messageForm {
+	border-radius: 8px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding: 10px;
-    background-color: #fff;
-    border-top: 1px solid #ddd;
-    flex-shrink: 0; /* Форма не сжимается */
-    box-sizing: border-box; /* Учитываем padding в общей ширине */
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+    box-sizing: border-box;
 }
 
 #messageForm textarea {
     resize: none;
-    width: 100%;
-    height: 80px;
+    width: calc(100% - 26px); /* Учитываем padding */
+    height: 60px; /* Фиксированная высота */
     border-radius: 8px;
-    padding: 10px;
+    padding: 12px;
     font-size: 16px;
-    border: 1px solid #ccc;
-    box-sizing: border-box; /* Учитываем padding в общей ширине */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    transition: border-color 0.3s ease;
+}
+
+#messageForm textarea::placeholder {
+    color: rgba(255, 255, 255, 0.7); /* Белый цвет с небольшой прозрачностью */
+}
+
+#messageForm textarea:focus {
+    border-color: #007bff;
+    outline: none;
 }
 
 #messageForm input[type="file"] {
     border: none;
     padding: 10px;
-    background-color: #f9f9f9;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    box-sizing: border-box; /* Учитываем padding в общей ширине */
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    width: calc(100% - 20px); /* Учитываем padding */
+}
+
+#messageForm input[type="file"]:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 #messageForm button {
-    background-color: #3498db;
+    background: linear-gradient(135deg, #007bff, #0056b3);
     color: #fff;
-    padding: 10px 20px;
+    padding: 12px 20px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
-    width: 100%; /* Кнопка занимает всю ширину формы */
-    box-sizing: border-box; /* Учитываем padding в общей ширине */
+    width: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 #messageForm button:hover {
-    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+#messageForm button:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 
 .online-status {
     padding: 12px;
-    background: #e3f2fd;
+    background: rgba(255, 255, 255, 0.1);
     text-align: center;
     font-size: 16px;
-    border-bottom: 2px solid #3498db;
-    color: #2c3e50;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
 }
 
 .online-status span {
     font-weight: bold;
-    color: #27ae60;
+    color: #00ff88;
 }
+
+/* Модальное окно для изображений */
 #imageModal {
-display: none;
-position: fixed;
-z-index: 1000;
-padding-top: 60px;
-left: 0;
-top: 0;
-width: 100%;
-height: 100%;
-background-color: rgba(0,0,0,0.9);
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
 }
+
 #modalImage {
-margin: auto;
-display: block;
-max-width: 80%;
-max-height: 80%;
+    margin: auto;
+    display: block;
+    max-width: 80%;
+    max-height: 80%;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
+
 .close {
-position: absolute;
-top: 20px;
-right: 35px;
-color: #fff;
-font-size: 40px;
-font-weight: bold;
-cursor: pointer;
-}
-#messageForm img {
-    cursor: zoom-in;
-    transition: transform 0.3s;
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
 }
 
-#messageForm img:hover {
-    transform: scale(1.05);
+.close:hover {
+    color: #ff4d4d;
 }
 
-.modal-content {
-    animation: zoom 0.3s;
-}
-
-@keyframes zoom {
-    from {transform: scale(0)}
-    to {transform: scale(1)}
-}
-/* Стили для группировки сообщений */
 /* Стили для группировки сообщений */
 .message-group {
     margin-bottom: 15px;
@@ -202,7 +251,7 @@ cursor: pointer;
 .sender-name {
     font-weight: bold;
     margin-bottom: 5px;
-    color: #333;
+    color: rgba(255, 255, 255, 0.8);
 }
 
 /* Сообщения внутри группы */
@@ -216,20 +265,21 @@ cursor: pointer;
 
 /* Контент сообщения */
 .message-group .message-content {
-    background-color: #f1f1f1;
+    background: rgba(255, 255, 255, 0.1);
     padding: 10px;
     border-radius: 8px;
     display: inline-block;
+    color: #fff;
 }
 
 .message-group.admin .message-content {
-    background-color: #e3f2fd;
+    background: rgba(0, 123, 255, 0.2);
 }
 
 /* Время под последним сообщением */
 .message-group .time {
     display: block;
     font-size: 0.8em;
-    color: #666;
+    color: rgba(255, 255, 255, 0.6);
     margin-top: 5px;
 }

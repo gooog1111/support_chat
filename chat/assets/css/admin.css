@@ -7,7 +7,7 @@ body, html {
     font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
-    background-color: #f4f4f4;
+    background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
 }
 
 /* Заголовок */
@@ -15,7 +15,7 @@ body, html {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #2c3e50;
+    background: linear-gradient(90deg, #4b79a1, #283e51);
     padding: 10px 20px;
     color: #ecf0f1;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -107,7 +107,8 @@ body, html {
 
 .chat-item {
     padding: 15px;
-    border-radius: 8px;
+    border-radius: 12px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
     cursor: pointer;
     transition: background-color 0.2s, border-left-color 0.2s;
     border-left: 5px solid transparent;

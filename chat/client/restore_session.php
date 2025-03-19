@@ -19,3 +19,4 @@ if (isset($_GET['name'])) {
 http_response_code(400); // HTTP-код для неверного запроса
 echo json_encode(['success' => false, 'error' => 'Имя клиента не указано.']);
 exit();
+?>

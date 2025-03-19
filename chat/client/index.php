@@ -92,7 +92,7 @@ $chatId = md5($clientToken . getClientIP()); // Генерация chatId на �
                 }
                 ?>
             </div>
-            <form id="messageForm" action="send_message.php" method="post" enctype="multipart/form-data">
+            <form id="messageForm" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
                 <textarea name="message" placeholder="Введите сообщение"></textarea>
                 <input type="file" name="image">

@@ -2,8 +2,9 @@ let currentChatId = null;
 const chatContainer = document.getElementById('chat-container');
 const chatMessages = document.getElementById('chat-messages');
 const chatForm = document.getElementById('chat-form');
+const textarea = chatForm.querySelector('textarea[name="message"]');
 
-// Функция для прокрутки вниз
+// 1. Функция для прокрутки вниз
 function scrollToBottom() {
     setTimeout(() => {
         if (chatMessages) {
@@ -12,6 +13,51 @@ function scrollToBottom() {
     }, 100); // Задержка 100 мс
 }
 
+// 2. Обработчик отправки формы
+const handleSubmit = async function (event) {
+    event.preventDefault(); // Предотвращаем стандартное поведение формы
+    if (!currentChatId) {
+        alert('Выберите чат для отправки сообщения.');
+        return;
+    }
+
+    const formData = new FormData(chatForm);
+    formData.append('chatId', currentChatId);
+
+    try {
+        const response = await fetch('send_message.php', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            chatForm.reset();
+            loadChatMessages(currentChatId);
+            scrollToBottom();
+        } else {
+            alert('Ошибка: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Ошибка при отправке сообщения:', error);
+        alert('Ошибка при отправке сообщения. Проверьте консоль для подробностей.');
+    }
+};
+
+// 3. Обработчик Enter (без Shift)
+textarea.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault(); // Предотвращаем перенос строки
+        handleSubmit(e); // Имитируем отправку формы
+    }
+});
+
+// 4. Обработчик отправки формы
+chatForm.addEventListener('submit', handleSubmit);
+
+// 5. Остальной код (без изменений)
 function setupChatItemListeners() {
     document.querySelectorAll('.chat-item').forEach(chatItem => {
         chatItem.addEventListener('click', function () {
@@ -27,7 +73,6 @@ function loadChatMessages(chatId) {
         .then(response => response.json())
         .then(messages => {
             if (chatMessages) {
-                // Сохраняем текущую позицию прокрутки
                 const isNearBottom = chatMessages.scrollHeight - chatMessages.scrollTop <= chatMessages.clientHeight + 100;
 
                 let groupedMessages = [];
@@ -53,21 +98,17 @@ function loadChatMessages(chatId) {
                     lastTime = currentTime;
                 });
 
-                // Очищаем контейнер сообщений
                 chatMessages.innerHTML = '';
 
-                // Отображаем сгруппированные сообщения
                 groupedMessages.forEach(group => {
                     const groupContainer = document.createElement('div');
                     groupContainer.classList.add('message-group', group.sender);
 
-                    // Добавляем имя отправителя в начале блока
                     const senderNameElement = document.createElement('div');
                     senderNameElement.classList.add('sender-name');
                     senderNameElement.textContent = group.senderName;
                     groupContainer.appendChild(senderNameElement);
 
-                    // Добавляем сообщения
                     group.messages.forEach((msg, index) => {
                         const messageElement = document.createElement('div');
                         messageElement.classList.add('message');
@@ -76,7 +117,6 @@ function loadChatMessages(chatId) {
                             ${msg.image ? `<br><img src="${msg.image}" alt="Изображение" style="max-width:200px; cursor: pointer;">` : ''}
                         `;
 
-                        // Добавляем время только под последним сообщением в блоке
                         if (index === group.messages.length - 1) {
                             const timeElement = document.createElement('span');
                             timeElement.classList.add('time');
@@ -90,7 +130,6 @@ function loadChatMessages(chatId) {
                     chatMessages.appendChild(groupContainer);
                 });
 
-                // Прокрутка вниз только если пользователь уже находится внизу
                 if (isNearBottom) {
                     setTimeout(() => {
                         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -164,10 +203,11 @@ function updateChatStatus(status, adminName) {
             }
         });
 }
+
 function updateHostnames() {
     const btn = document.querySelector('.btn-warning');
-    console.log('Кнопка нажата'); // Шаг 1
-    
+    console.log('Кнопка нажата');
+
     if (!confirm('Обновить имена компьютеров для всех чатов?')) {
         console.log('Действие отменено пользователем');
         return;
@@ -176,8 +216,7 @@ function updateHostnames() {
     btn.classList.add('updating');
     const statusElement = document.createElement('div');
     statusElement.className = 'update-status';
-    
-    // Создаем прогресс-бар
+
     const progressBar = document.createElement('div');
     progressBar.style.cssText = `
         width: 250px; 
@@ -187,7 +226,7 @@ function updateHostnames() {
         margin: 10px 0;
         overflow: hidden;
     `;
-    
+
     const progressFill = document.createElement('div');
     progressFill.style.cssText = `
         width: 0%;
@@ -195,7 +234,7 @@ function updateHostnames() {
         background: #3498db;
         transition: width 0.3s ease;
     `;
-    
+
     progressBar.appendChild(progressFill);
     statusElement.appendChild(progressBar);
     document.body.appendChild(statusElement);
@@ -206,29 +245,29 @@ function updateHostnames() {
         progressFill.style.width = `${progress}%`;
     }, 300);
 
-    console.log('Отправка запроса...'); // Шаг 2
-    
+    console.log('Отправка запроса...');
+
     fetch('update_hostnames.php?_=' + Date.now())
         .then(response => {
-            console.log('Ответ получен, статус:', response.status); // Шаг 3
+            console.log('Ответ получен, статус:', response.status);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             return response.text();
         })
         .then(data => {
-            console.log('Данные ответа:', data); // Шаг 4
+            console.log('Данные ответа:', data);
             progressFill.style.width = '100%';
             progressFill.style.background = '#2ecc71';
-            
+
             statusElement.innerHTML += `
                 <div class="success-alert">
                     ✔️ ${data}
                     <button onclick="this.parentElement.remove()" class="close-btn">&times;</button>
                 </div>`;
-            
+
             updateChatList();
         })
         .catch(error => {
-            console.error('Ошибка:', error); // Шаг 5
+            console.error('Ошибка:', error);
             progressFill.style.background = '#e74c3c';
             statusElement.innerHTML += `
                 <div class="error-alert">
@@ -244,83 +283,33 @@ function updateHostnames() {
             }, 5000);
         });
 }
+
+// Инициализация
 document.addEventListener('DOMContentLoaded', function () {
     setupChatItemListeners();
 
-    chatForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        formData.append('chatId', currentChatId);
-
-        fetch('send_message.php', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    loadChatMessages(currentChatId);
-                    chatForm.reset();
-                    setTimeout(scrollToBottom, 100); // Прокрутка вниз после отправки сообщения
-                } else {
-                    alert('Ошибка: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка при отправке сообщения:', error);
-                alert('Ошибка при отправке сообщения. Проверьте консоль для подробностей.');
-            });
-    });
-    const messageInput = chatForm.querySelector('textarea[name="message"]');
-    if (messageInput) {
-        messageInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // Предотвращаем перенос строки
-                chatForm.dispatchEvent(new Event('submit')); // Имитируем отправку формы
-            }
-        });
-    }
-    // Получаем модальное окно и изображение внутри него
+    // Модальное окно для изображений
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('modalImage');
-    const captionText = document.getElementById('caption');
     const closeBtn = document.querySelector('.close');
 
-    // Функция для открытия модального окна с изображением
-    function openImageModal(imageSrc, altText) {
-        modal.style.display = 'block';
-        modalImg.src = imageSrc;
-        captionText.innerHTML = altText || ''; // Подпись, если есть
-    }
-
-    // Закрытие модального окна при клике на крестик
-    closeBtn.onclick = function () {
-        modal.style.display = 'none';
-    };
-
-    // Закрытие модального окна при клике вне изображения
-    window.onclick = function (event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
+    chatMessages.addEventListener('click', function (event) {
+        if (event.target.tagName === 'IMG') {
+            modal.style.display = 'block';
+            modalImg.src = event.target.src;
         }
-    };
+    });
 
-    // Закрытие модального окна по клавише Escape
-    document.addEventListener('keydown', function (event) {
+    closeBtn.onclick = () => modal.style.display = 'none';
+    window.onclick = (event) => {
+        if (event.target === modal) modal.style.display = 'none';
+    };
+    document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && modal.style.display === 'block') {
             modal.style.display = 'none';
         }
     });
 
-    // Добавляем обработчик клика на все изображения в чате
-    const chatMessages = document.getElementById('chat-messages');
-    if (chatMessages) {
-        chatMessages.addEventListener('click', function (event) {
-            if (event.target.tagName === 'IMG') {
-                openImageModal(event.target.src, event.target.alt);
-            }
-        });
-    }
     setInterval(() => {
         if (currentChatId) {
             loadChatMessages(currentChatId);

@@ -171,7 +171,7 @@ body, html {
 
 #chat-form textarea {
     resize: none;
-    width: 100%;
+    width: calk (98% - 10px);
     height: 80px;
     border-radius: 5px;
     border: 1px solid #ccc;
@@ -651,4 +651,28 @@ body, html {
     font-size: 0.8em;
     color: #666;
     margin-top: 5px;
+}
+@keyframes neonGlow {
+    0% { box-shadow: 0 0 5px #00ff88, 0 0 10px #00ff88, 0 0 20px #00ff88; }
+    50% { box-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88, 0 0 40px #00ff88; }
+    100% { box-shadow: 0 0 5px #00ff88, 0 0 10px #00ff88, 0 0 20px #00ff88; }
+}
+
+.chat-item.unread {
+    animation: neonGlow 1.5s infinite;
+    border-radius: 12px;
+}
+#enableNotificationsBtn {
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#enableNotificationsBtn:hover {
+    background-color: #138496;
 }

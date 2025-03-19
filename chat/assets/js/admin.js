@@ -3,6 +3,10 @@ const chatContainer = document.getElementById('chat-container');
 const chatMessages = document.getElementById('chat-messages');
 const chatForm = document.getElementById('chat-form');
 const textarea = chatForm.querySelector('textarea[name="message"]');
+let hasUnreadMessages = false; // Флаг для отслеживания непрочитанных сообщений
+let notificationShown = false; // Флаг для отслеживания показанных уведомлений
+let lastUnreadCount = 0; // Количество непрочитанных сообщений в прошлом обновлении
+let notificationsEnabled = false; // Флаг для отслеживания разрешения на уведомления и звук
 
 // 1. Функция для прокрутки вниз
 function scrollToBottom() {
@@ -150,6 +154,31 @@ function updateChatList() {
         .then(html => {
             document.querySelector('.chat-list').innerHTML = html;
             setupChatItemListeners();
+
+            // Проверка непрочитанных сообщений
+            let currentUnreadCount = 0;
+            document.querySelectorAll('.chat-item').forEach(chatItem => {
+                const unreadCount = parseInt(chatItem.querySelector('p:last-child').textContent.match(/\d+/)[0]);
+                if (unreadCount > 0) {
+                    chatItem.classList.add('unread');
+                    currentUnreadCount += unreadCount;
+                } else {
+                    chatItem.classList.remove('unread');
+                }
+            });
+
+            // Если нет непрочитанных сообщений, сбрасываем флаг
+            if (currentUnreadCount === 0) {
+                notificationShown = false;
+            }
+
+            // Если количество непрочитанных сообщений увеличилось и уведомления разрешены
+            if (currentUnreadCount > lastUnreadCount && notificationsEnabled) {
+                playNotificationSound();
+                showDesktopNotification();
+            }
+
+            lastUnreadCount = currentUnreadCount;
         })
         .catch(error => {
             console.error('Ошибка при обновлении списка чатов:', error);
@@ -316,5 +345,59 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }, 5000);
 
-    setInterval(updateChatList, 10000);
+    setInterval(updateChatList, 5000);
+});
+
+function playNotificationSound() {
+    const notificationSound = document.getElementById('notificationSound');
+    if (notificationSound) {
+        notificationSound.play().catch(error => {
+            console.error('Ошибка воспроизведения звука:', error);
+        });
+    }
+}
+
+function showDesktopNotification() {
+    if (Notification.permission === 'granted') {
+        new Notification('Новое сообщение', {
+            body: 'У вас есть непрочитанные сообщения в чате.',
+            icon: '../assets/images/notification-icon.png'
+        });
+    } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                new Notification('Новое сообщение', {
+                    body: 'У вас есть непрочитанные сообщения в чате.',
+                    icon: '../assets/images/notification-icon.png'
+                });
+            }
+        });
+    }
+}
+
+// Обработчик для кнопки разрешения уведомлений и звука
+document.getElementById('enableNotificationsBtn').addEventListener('click', function () {
+    // Запрашиваем разрешение на уведомления
+    Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+            notificationsEnabled = true;
+            alert('Уведомления и звук разрешены!');
+        } else {
+            alert('Уведомления не разрешены. Пожалуйста, разрешите уведомления в настройках браузера.');
+        }
+    });
+
+    // Воспроизводим тестовый звук для разрешения автовоспроизведения
+    const notificationSound = document.getElementById('notificationSound');
+    if (notificationSound) {
+        notificationSound.play().catch(error => {
+            console.error('Ошибка воспроизведения звука:', error);
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        Notification.requestPermission();
+    }
 });

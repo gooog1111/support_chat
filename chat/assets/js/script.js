@@ -2,116 +2,73 @@ document.addEventListener('DOMContentLoaded', function () {
     const messageForm = document.getElementById('messageForm');
     const chatDiv = document.getElementById('messages');
     const submitButton = messageForm.querySelector('button[type="submit"]');
-    let isSending = false; // Флаг для отслеживания состояния отправки
+    const textarea = messageForm.querySelector('textarea[name="message"]');
+    let isSending = false;
+    let scrollTimeout;
 
-    // Функция для прокрутки вниз
-function scrollToBottom() {
-    const chatDiv = document.getElementById('messages');
-    if (chatDiv) {
-        chatDiv.scrollTo({
-            top: chatDiv.scrollHeight,
-            behavior: 'smooth' // Плавная прокрутка
-        });
-    }
-}
+    // 1. Полностью отключаем стандартное поведение формы
+    messageForm.onsubmit = function (e) {
+        e.preventDefault();
+        return false;
+    };
 
-    // Функция для восстановления сессии
-    function restoreSession() {
-        const clientName = localStorage.getItem('clientName');
-        if (clientName) {
-            fetch(`restore_session.php?name=${encodeURIComponent(clientName)}`)
-                .then(response => {
-                    if (response.ok) {
-                        // Сессия восстановлена, обновляем чат
-                        updateChat();
-                    } else {
-                        console.error('Ошибка при восстановлении сессии');
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка при восстановлении сессии:', error);
-                });
-        }
-    }
+    // 2. Обработчик для кнопки и Enter
+    const handleSubmit = async function (event) {
+        event.preventDefault();
+        if (isSending) return;
 
-    // Обработка отправки формы
-    messageForm.addEventListener('submit', async function (event) {
-        event.preventDefault(); // Отменяем стандартное поведение формы
-
-        if (isSending) return; // Если отправка уже идет, прерываем выполнение
-        isSending = true; // Устанавливаем флаг отправки
-        submitButton.disabled = true; // Отключаем кнопку отправки
-
-        const messageInput = messageForm.querySelector('textarea');
-        const fileInput = messageForm.querySelector('input[type="file"]');
-
-        // Проверка на пустое сообщение и отсутствие изображения
-        if (!messageInput.value.trim() && !fileInput.files.length) {
-            alert('Пожалуйста, введите сообщение или выберите изображение.');
-            isSending = false; // Сбрасываем флаг отправки
-            submitButton.disabled = false; // Включаем кнопку отправки
-            return; // Прерываем отправку, если нет текста и изображения
-        }
-
-        const formData = new FormData(messageForm); // Собираем данные формы
+        isSending = true;
+        submitButton.disabled = true;
 
         try {
+            const formData = new FormData(messageForm);
             const response = await fetch('send_message.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             });
-
-            // Проверка, что ответ является JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                throw new Error(`Ожидался JSON, но получен: ${text}`);
-            }
 
             const data = await response.json();
 
             if (data.success) {
-                // Очищаем поле ввода и файловое поле
-                messageInput.value = '';
-                fileInput.value = '';
-
-                // Обновляем чат после успешной отправки
-                updateChat();
+                messageForm.reset();
+                await updateChat(true); // Принудительная прокрутка только после отправки
             } else {
-                console.error(data.error);
-                alert('Ошибка при отправке сообщения: ' + data.error);
+                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
             }
         } catch (error) {
-            console.error('Ошибка при отправке сообщения:', error);
-            alert('Произошла ошибка при отправке сообщения: ' + error.message);
+            console.error('Ошибка:', error);
+            alert('Ошибка сети');
         } finally {
-            isSending = false; // Сбрасываем флаг отправки
-            submitButton.disabled = false; // Включаем кнопку отправки
+            isSending = false;
+            submitButton.disabled = false;
+        }
+    };
+
+    // 3. Единый обработчик для всех способов отправки
+    messageForm.addEventListener('submit', handleSubmit);
+    textarea.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            handleSubmit(e);
         }
     });
-const messageInput = messageForm.querySelector('textarea[name="message"]');
-    if (messageInput) {
-        messageInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // Предотвращаем перенос строки
-                messageForm.dispatchEvent(new Event('submit')); // Имитируем отправку формы
-            }
-        });
-    }
-    // Функция для обновления чата
-function updateChat() {
-    fetch('get_messages.php')
-        .then(response => {
+
+    // 4. Улучшенная функция обновления чата с группировкой сообщений
+    async function updateChat(forceScroll = false) {
+        try {
+            const response = await fetch('get_messages.php', {
+                credentials: 'same-origin'
+            });
+
             if (!response.ok) {
                 restoreSession();
-                throw new Error('Сессия не активна. Восстановление...');
+                return;
             }
-            return response.json();
-        })
-        .then(messages => {
-            // Сохраняем текущую позицию прокрутки
-            const isNearBottom = chatDiv.scrollHeight - chatDiv.scrollTop <= chatDiv.clientHeight + 100;
 
+            const messages = await response.json();
+            const wasNearBottom = chatDiv.scrollHeight - chatDiv.scrollTop <= chatDiv.clientHeight + 100;
+
+            // Группировка сообщений
             let groupedMessages = [];
             let lastSender = null;
             let lastTime = null;
@@ -135,101 +92,90 @@ function updateChat() {
                 lastTime = currentTime;
             });
 
-            // Очищаем чат перед добавлением новых сообщений
-            chatDiv.innerHTML = '';
+            // Отрисовка сообщений
+            chatDiv.innerHTML = groupedMessages.map(group => `
+                <div class="message-group ${group.sender}">
+                    <div class="sender-name">${group.senderName}</div>
+                    ${group.messages.map((msg, index) => `
+                        <div class="message">
+                            <div class="message-content">${msg.message}</div>
+                            ${msg.image ? `<img src="${msg.image}" style="max-width:200px;">` : ''}
+                            ${index === group.messages.length - 1 ? `<span class="time">${msg.time}</span>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
 
-            // Добавляем сгруппированные сообщения в чат
-            groupedMessages.forEach(group => {
-                const groupContainer = document.createElement('div');
-                groupContainer.classList.add('message-group', group.sender);
-
-                // Добавляем имя отправителя в начале блока
-                const senderNameElement = document.createElement('div');
-                senderNameElement.classList.add('sender-name');
-                senderNameElement.textContent = group.senderName;
-                groupContainer.appendChild(senderNameElement);
-
-                // Добавляем сообщения
-                group.messages.forEach((msg, index) => {
-                    const messageElement = document.createElement('div');
-                    messageElement.classList.add('message');
-                    messageElement.innerHTML = `
-                        <div class="message-content">${msg.message}</div>
-                        ${msg.image ? `<br><img src="${msg.image}" alt="Изображение" style="max-width:200px;">` : ''}
-                    `;
-
-                    // Добавляем время только под последним сообщением в блоке
-                    if (index === group.messages.length - 1) {
-                        const timeElement = document.createElement('span');
-                        timeElement.classList.add('time');
-                        timeElement.textContent = msg.time;
-                        messageElement.appendChild(timeElement);
-                    }
-
-                    groupContainer.appendChild(messageElement);
-                });
-
-                chatDiv.appendChild(groupContainer);
-            });
-
-            // Прокрутка вниз только если пользователь уже находится внизу
-            if (isNearBottom) {
-                setTimeout(scrollToBottom, 100); // Плавная прокрутка
+            // Умная прокрутка
+            if (forceScroll || wasNearBottom) {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    chatDiv.scrollTo({
+                        top: chatDiv.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 100);
             }
-        })
-        .catch(error => {
-            console.error('Ошибка при обновлении чата:', error);
-        });
-}
-
-    // Обновляем чат каждые 10 секунд (увеличенный интервал для снижения нагрузки)
-    setInterval(updateChat, 10000);
-
-    // Первоначальная загрузка чата и прокрутка вниз
-    updateChat();
-    scrollToBottom();
-});
-function updateOnlineAdmins() {
-            fetch('get_online_admins.php')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('onlineAdmins').textContent = data.online;
-                })
-                .catch(error => console.error('Ошибка:', error));
+        } catch (error) {
+            console.error('Ошибка обновления:', error);
         }
-        setInterval(updateOnlineAdmins, 10000);
-        updateOnlineAdmins();
-// Добавить в конец файла
-document.addEventListener('DOMContentLoaded', function() {
-    // Функционал модального окна
+    }
+
+    // 5. Функция восстановления сессии
+    function restoreSession() {
+        const clientName = localStorage.getItem('clientName');
+        if (clientName) {
+            fetch(`restore_session.php?name=${encodeURIComponent(clientName)}`, {
+                credentials: 'same-origin'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/chat/client'; // Редирект
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка восстановления:', error);
+                });
+        }
+    }
+
+    // 6. Функция обновления онлайн-админов
+    function updateOnlineAdmins() {
+        fetch('get_online_admins.php', {
+            credentials: 'same-origin'
+        })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('onlineAdmins').textContent = data.online;
+            })
+            .catch(error => console.error('Ошибка:', error));
+    }
+
+    // 7. Модальное окно для изображений
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById("modalImage");
     const span = document.getElementsByClassName("close")[0];
 
-    // Открытие изображения
-    document.getElementById('messages').addEventListener('click', function(e) {
+    chatDiv.addEventListener('click', function (e) {
         if (e.target.tagName === 'IMG') {
             modal.style.display = "block";
             modalImg.src = e.target.src;
         }
     });
 
-    // Закрытие модального окна
-    span.onclick = function() { 
-        modal.style.display = "none";
-    }
-    
-    // Закрытие при клике вне изображения
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-    
-    // Закрытие по ESC
-    document.addEventListener('keydown', function(event) {
+    span.onclick = () => modal.style.display = "none";
+    window.onclick = (event) => {
+        if (event.target === modal) modal.style.display = "none";
+    };
+    document.addEventListener('keydown', (event) => {
         if (event.key === "Escape" && modal.style.display === "block") {
             modal.style.display = "none";
         }
     });
+
+    // Инициализация
+    updateChat();
+    updateOnlineAdmins();
+    setInterval(() => updateChat(false), 10000); // Обновление чата без прокрутки
+    setInterval(updateOnlineAdmins, 10000); // Обновление онлайн-админов
 });

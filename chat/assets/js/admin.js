@@ -3,23 +3,40 @@ const chatContainer = document.getElementById('chat-container');
 const chatMessages = document.getElementById('chat-messages');
 const chatForm = document.getElementById('chat-form');
 const textarea = chatForm.querySelector('textarea[name="message"]');
-let hasUnreadMessages = false; // Флаг для отслеживания непрочитанных сообщений
-let notificationShown = false; // Флаг для отслеживания показанных уведомлений
-let lastUnreadCount = 0; // Количество непрочитанных сообщений в прошлом обновлении
-let notificationsEnabled = false; // Флаг для отслеживания разрешения на уведомления и звук
+let hasUnreadMessages = false;
+let notificationShown = false;
+let lastUnreadCount = 0;
+let notificationsEnabled = false;
 
-// 1. Функция для прокрутки вниз
+// Функция для проверки разрешений на уведомления и звук
+function checkNotificationPermissions() {
+    if (Notification.permission !== 'granted') {
+        notificationsEnabled = false;
+        alert('Для работы с чатом необходимо разрешить уведомления и звук.');
+        return false;
+    }
+    notificationsEnabled = true;
+    return true;
+}
+
+// Функция для прокрутки вниз
 function scrollToBottom() {
     setTimeout(() => {
         if (chatMessages) {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-    }, 100); // Задержка 100 мс
+    }, 100);
 }
 
-// 2. Обработчик отправки формы
+// Обработчик отправки формы
 const handleSubmit = async function (event) {
-    event.preventDefault(); // Предотвращаем стандартное поведение формы
+    event.preventDefault();
+
+    // Проверка разрешений перед отправкой сообщения
+    if (!checkNotificationPermissions()) {
+        return;
+    }
+
     if (!currentChatId) {
         alert('Выберите чат для отправки сообщения.');
         return;
@@ -50,21 +67,26 @@ const handleSubmit = async function (event) {
     }
 };
 
-// 3. Обработчик Enter (без Shift)
+// Обработчик Enter (без Shift)
 textarea.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault(); // Предотвращаем перенос строки
-        handleSubmit(e); // Имитируем отправку формы
+        e.preventDefault();
+        handleSubmit(e);
     }
 });
 
-// 4. Обработчик отправки формы
+// Обработчик отправки формы
 chatForm.addEventListener('submit', handleSubmit);
 
-// 5. Остальной код (без изменений)
+// Остальной код (без изменений)
 function setupChatItemListeners() {
     document.querySelectorAll('.chat-item').forEach(chatItem => {
         chatItem.addEventListener('click', function () {
+            // Проверка разрешений перед открытием чата
+            if (!checkNotificationPermissions()) {
+                return;
+            }
+
             currentChatId = this.getAttribute('data-chat-id');
             chatContainer.style.display = 'block';
             loadChatMessages(currentChatId);
@@ -190,6 +212,12 @@ function closeChat() {
         alert('Выберите чат для закрытия.');
         return;
     }
+
+    // Проверка разрешений перед закрытием чата
+    if (!checkNotificationPermissions()) {
+        return;
+    }
+
     fetch(`close_chat.php?id=${currentChatId}`, { method: 'POST' })
         .then(response => response.json())
         .then(data => {
@@ -206,6 +234,12 @@ function clearChat() {
         alert('Выберите чат для очистки.');
         return;
     }
+
+    // Проверка разрешений перед очисткой чата
+    if (!checkNotificationPermissions()) {
+        return;
+    }
+
     fetch(`clear_chat.php?id=${currentChatId}`, { method: 'POST' })
         .then(response => response.json())
         .then(data => {
@@ -222,6 +256,12 @@ function updateChatStatus(status, adminName) {
         alert('Выберите чат для обновления статуса.');
         return;
     }
+
+    // Проверка разрешений перед обновлением статуса
+    if (!checkNotificationPermissions()) {
+        return;
+    }
+
     fetch(`update_chat_status.php?id=${currentChatId}&status=${status}&admin=${adminName}`, { method: 'GET' })
         .then(response => response.json())
         .then(data => {
@@ -346,6 +386,42 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 5000);
 
     setInterval(updateChatList, 5000);
+
+    // Показ модального окна для разрешения уведомлений и звука
+    const notificationModal = document.createElement('div');
+    notificationModal.id = 'notificationModal';
+    notificationModal.innerHTML = `
+        <div class="notification-modal-content">
+            <h2>Разрешить уведомления и звук</h2>
+            <p>Для работы с чатом необходимо разрешить уведомления и звук.</p>
+            <button id="allowNotifications">Разрешить</button>
+        </div>
+    `;
+    document.body.appendChild(notificationModal);
+
+    document.getElementById('allowNotifications').addEventListener('click', function () {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                notificationsEnabled = true;
+                notificationModal.style.display = 'none';
+                const notificationSound = document.getElementById('notificationSound');
+                if (notificationSound) {
+                    notificationSound.play().catch(error => {
+                        console.error('Ошибка воспроизведения звука:', error);
+                    });
+                }
+            } else {
+                alert('Для работы с чатом необходимо разрешить уведомления и звук.');
+            }
+        });
+    });
+
+    // Проверка разрешений при загрузке страницы
+    if (Notification.permission !== 'granted') {
+        notificationModal.style.display = 'flex';
+    } else {
+        notificationsEnabled = true;
+    }
 });
 
 function playNotificationSound() {
@@ -374,30 +450,3 @@ function showDesktopNotification() {
         });
     }
 }
-
-// Обработчик для кнопки разрешения уведомлений и звука
-document.getElementById('enableNotificationsBtn').addEventListener('click', function () {
-    // Запрашиваем разрешение на уведомления
-    Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-            notificationsEnabled = true;
-            alert('Уведомления и звук разрешены!');
-        } else {
-            alert('Уведомления не разрешены. Пожалуйста, разрешите уведомления в настройках браузера.');
-        }
-    });
-
-    // Воспроизводим тестовый звук для разрешения автовоспроизведения
-    const notificationSound = document.getElementById('notificationSound');
-    if (notificationSound) {
-        notificationSound.play().catch(error => {
-            console.error('Ошибка воспроизведения звука:', error);
-        });
-    }
-});
-
-document.addEventListener('DOMContentLoaded', function () {
-    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-        Notification.requestPermission();
-    }
-});

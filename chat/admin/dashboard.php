@@ -43,9 +43,9 @@ usort($chats, fn($a, $b) => strtotime($b['last_activity']) <=> strtotime($a['las
     <meta charset="UTF-8">
     <title>Панель администратора</title>
     <link rel="stylesheet" href="../assets/css/admin.css">
-	<link rel="stylesheet" href="../assets/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/all.min.css">
     <script src="../assets/js/admin.js" defer></script>
-	<audio id="notificationSound" src="../assets/sounds/notification.mp3" preload="auto"></audio>
+    <audio id="notificationSound" src="../assets/sounds/notification.mp3" preload="auto"></audio>
 </head>
 <body>
 <header class="admin-header">
@@ -59,9 +59,6 @@ usort($chats, fn($a, $b) => strtotime($b['last_activity']) <=> strtotime($a['las
         <span>Обновить имена ПК</span>
     </button>
 </div>
-<button id="enableNotificationsBtn" class="btn btn-info">
-    <i class="fas fa-bell"></i> Разрешить уведомления и звук
-</button>
     <a href="update_profile.php" class="btn profile-link">Изменить профиль</a>
     <a href="logout.php" class="btn logout">Выход</a>
 </header>

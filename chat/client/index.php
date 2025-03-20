@@ -59,6 +59,7 @@ $chatId = md5($clientToken . getClientIP()); // Генерация chatId на �
 <head>
     <meta charset="UTF-8">
     <title>Чат поддержки</title>
+	<audio id="notificationSound" src="../assets/sounds/notification.mp3" preload="auto"></audio>
     <link rel="stylesheet" href="../assets/css/styles.css">
     <script src="../assets/js/script.js" defer></script>
     <script>

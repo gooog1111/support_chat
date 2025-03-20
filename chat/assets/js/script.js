@@ -6,6 +6,127 @@ document.addEventListener('DOMContentLoaded', function () {
     let isSending = false;
     let scrollTimeout;
 
+    // Массив для хранения идентификаторов обработанных сообщений
+    let processedMessages = [];
+
+    // Переменная для хранения разрешения на уведомления и звук
+    let notificationsEnabled = false;
+
+    // Проверка поддержки уведомлений
+    if (!("Notification" in window)) {
+        console.log("Браузер не поддерживает уведомления.");
+    }
+
+    // Функция для воспроизведения звука
+    function playNotificationSound() {
+        if (notificationsEnabled) {
+            const audio = new Audio('../assets/sounds/notification.mp3');
+            audio.play().catch(error => {
+                console.error("Ошибка воспроизведения звука:", error);
+            });
+        }
+    }
+
+    // Функция для показа уведомления на рабочем столе
+    function showDesktopNotification(message) {
+        if (notificationsEnabled && Notification.permission === "granted") {
+            new Notification("Новое сообщение от администратора", {
+                body: message,
+                icon: '../assets/images/notification-icon.png' // Иконка уведомления
+            });
+        }
+    }
+
+    // Отслеживание активности вкладки
+    let isTabActive = true;
+
+    document.addEventListener('visibilitychange', () => {
+        isTabActive = !document.hidden;
+    });
+
+    // Функция для обработки новых сообщений
+    function handleNewMessage(msg) {
+        // Генерация уникального идентификатора сообщения (например, время + текст)
+        const messageId = `${msg.time}-${msg.message}`;
+
+        // Проверка, было ли сообщение уже обработано
+        if (!processedMessages.includes(messageId)) {
+            processedMessages.push(messageId); // Добавляем сообщение в список обработанных
+            if (msg.isAdmin && !isTabActive) {
+                playNotificationSound();
+                showDesktopNotification(msg.message);
+            }
+        }
+    }
+
+    // Показ модального окна с предложением разрешить уведомления и звук
+    function showNotificationPermissionModal() {
+        const modal = document.createElement('div');
+        modal.style.position = 'fixed';
+        modal.style.top = '50%';
+        modal.style.left = '50%';
+        modal.style.transform = 'translate(-50%, -50%)';
+        modal.style.backgroundColor = '#2c3e50'; // Темный фон, как в чате
+        modal.style.padding = '20px';
+        modal.style.borderRadius = '12px';
+        modal.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3)'; // Тень, как в чате
+        modal.style.zIndex = '1000';
+        modal.style.textAlign = 'center';
+        modal.style.width = '320px'; // Фиксированная ширина
+        modal.style.fontFamily = 'Arial, sans-serif';
+        modal.style.color = '#ecf0f1'; // Светлый текст
+        modal.style.border = '1px solid rgba(255, 255, 255, 0.1)'; // Граница
+
+        modal.innerHTML = `
+            <h3 style="margin: 0 0 15px; font-size: 18px; color: #ecf0f1;">Разрешить уведомления?</h3>
+            <p style="margin: 0 0 20px; font-size: 14px; color: #bdc3c7;">Вы будете получать уведомления на рабочий стол о новых сообщениях от администратора.</p>
+            <div style="display: flex; justify-content: space-between; gap: 10px;">
+                <button id="allowNotifications" style="flex: 1; padding: 10px 20px; background-color: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: background-color 0.3s;">Да</button>
+                <button id="denyNotifications" style="flex: 1; padding: 10px 20px; background-color: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: background-color 0.3s;">Нет</button>
+            </div>
+        `;
+
+        // Добавляем hover-эффекты для кнопок
+        const allowButton = modal.querySelector('#allowNotifications');
+        const denyButton = modal.querySelector('#denyNotifications');
+
+        allowButton.addEventListener('mouseenter', () => {
+            allowButton.style.backgroundColor = '#2ecc71';
+        });
+        allowButton.addEventListener('mouseleave', () => {
+            allowButton.style.backgroundColor = '#27ae60';
+        });
+
+        denyButton.addEventListener('mouseenter', () => {
+            denyButton.style.backgroundColor = '#c0392b';
+        });
+        denyButton.addEventListener('mouseleave', () => {
+            denyButton.style.backgroundColor = '#e74c3c';
+        });
+
+        // Обработка нажатия на кнопку "Да"
+        allowButton.addEventListener('click', () => {
+            notificationsEnabled = true;
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    console.log("Уведомления разрешены.");
+                }
+            });
+            document.body.removeChild(modal);
+        });
+
+        // Обработка нажатия на кнопку "Нет"
+        denyButton.addEventListener('click', () => {
+            notificationsEnabled = false;
+            document.body.removeChild(modal);
+        });
+
+        document.body.appendChild(modal);
+    }
+
+    // Показываем модальное окно при загрузке страницы
+    showNotificationPermissionModal();
+
     // 1. Полностью отключаем стандартное поведение формы
     messageForm.onsubmit = function (e) {
         e.preventDefault();
@@ -86,6 +207,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         senderName: msg.isAdmin ? msg.adminName : 'Вы',
                         messages: [msg]
                     });
+                }
+
+                // Обработка новых сообщений от администратора
+                if (msg.isAdmin) {
+                    handleNewMessage(msg);
                 }
 
                 lastSender = msg.isAdmin ? 'admin' : 'client';

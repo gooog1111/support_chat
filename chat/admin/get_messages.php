@@ -19,10 +19,16 @@ if (!$chatId || !file_exists(CHATS_DIR . "$chatId.json")) {
     exit();
 }
 updateLastViewTime($chatId);
+
 // Возвращение сообщений
 header('Content-Type: application/json');
 try {
     $messages = getMessages($chatId);
+    // Добавляем chatId к каждому сообщению
+    $messages = array_map(function($msg) use ($chatId) {
+        $msg['chatId'] = $chatId;
+        return $msg;
+    }, $messages);
     echo json_encode($messages);
 } catch (Exception $e) {
     http_response_code(500); // Внутренняя ошибка сервера

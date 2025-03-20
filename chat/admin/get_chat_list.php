@@ -41,7 +41,6 @@ foreach ($chats as $chat): ?>
         <?php
         $fields = [
             'Клиент' => $chat['info']['name'] ?? 'Неизвестный',
-            'Kerberos' => $chat['info']['kerberos'] ?? 'Неизвестно',
             'IP' => $chat['info']['ip'] ?? 'Неизвестный',
             'Имя ПК' => $chat['info']['hostname'] ?? 'Не определено',
             'Статус' => $chat['status'],
